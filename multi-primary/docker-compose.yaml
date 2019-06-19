@@ -7,7 +7,7 @@ services:
     container_name: mgr-node-0
     restart: unless-stopped
     env_file:
-      - ../env/base.env
+      - ./env/base.env
     environment:
       - MYSQL_ROOT_PASSWORD=${NODE_MYSQL_ROOT_PASSWORD}
     ports:
@@ -16,16 +16,16 @@ services:
       - "3306"
       - ${MGR_PORT}
     volumes:
-      - ./cnf/mgr-node-0.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+      - ./cnf/mgr-node.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
       - ./log/node-0/:/var/log/mysql/
       - mgr-node-0-data:/var/lib/mysql
-      - ./init-db-sql/init-master.sh:/docker-entrypoint-initdb.d/1-init-master.sh
+#      - ./init-db-sql/init-master.sh:/docker-entrypoint-initdb.d/1-init-master.sh
     command: [
       "--server-id=${NODE_0_SERVER_ID}",
-      "--report_host='${NODE_0_IP}'",
-      "--loose-loose-group_replication_local_address='${NODE_0_IP}:${MGR_PORT}'",
-      "--loose-group_replication_group_seeds='${NODE_0_IP}:${MGR_PORT},${NODE_1_IP}:${MGR_PORT},${NODE_2_IP}:${MGR_PORT}'",
-      "--loose-group_replication_ip_whitelist='${NODE_IP_WHITE_LIST}'",
+      "--report_host=${NODE_0_IP}",
+      "--loose-loose-group_replication_local_address=${NODE_0_IP}:${MGR_PORT}",
+      "--loose-group_replication_group_seeds=${NODE_0_IP}:${MGR_PORT},${NODE_1_IP}:${MGR_PORT},${NODE_2_IP}:${MGR_PORT}",
+      "--loose-group_replication_ip_whitelist=${NODE_IP_WHITE_LIST}",
       "--character-set-server=utf8mb4",
       "--collation-server=utf8mb4_unicode_ci",
       ]
@@ -44,23 +44,23 @@ services:
     depends_on:
       - mgr-node-0
     volumes:
-      - ./cnf/mgr-node-1.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+      - ./cnf/mgr-node.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
       - ./log/node-1/:/var/log/mysql/
       - mgr-node-1-data:/var/lib/mysql
 #      - ./init-db-sql/init-node.sh:/docker-entrypoint-initdb.d/1-init-node.sh
     command: [
       "--server-id=${NODE_1_SERVER_ID}",
-      "--report_host='${NODE_1_IP}'",
-      "--loose-loose-group_replication_local_address='${NODE_1_IP}:${MGR_PORT}'",
-      "--loose-group_replication_group_seeds='${NODE_0_IP}:${MGR_PORT},${NODE_1_IP}:${MGR_PORT},${NODE_2_IP}:${MGR_PORT}'",
-      "--loose-group_replication_ip_whitelist='${NODE_IP_WHITE_LIST}'",
+      "--report_host=${NODE_1_IP}",
+      "--loose-loose-group_replication_local_address=${NODE_1_IP}:${MGR_PORT}",
+      "--loose-group_replication_group_seeds=${NODE_0_IP}:${MGR_PORT},${NODE_1_IP}:${MGR_PORT},${NODE_2_IP}:${MGR_PORT}",
+      "--loose-group_replication_ip_whitelist=${NODE_IP_WHITE_LIST}",
       "--character-set-server=utf8mb4",
       "--collation-server=utf8mb4_unicode_ci",
       ]
     networks:
       mgr_cluster:
         ipv4_address: ${NODE_1_IP}
-  
+
   mgr-node-2:
     <<: *mysql
     container_name: mgr-node-2
@@ -69,15 +69,15 @@ services:
     depends_on:
       - mgr-node-0
     volumes:
-      - ./cnf/mgr-node-2.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+      - ./cnf/mgr-node.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
       - ./log/node-2/:/var/log/mysql/
       - mgr-node-2-data:/var/lib/mysql
     command: [
       "--server-id=${NODE_2_SERVER_ID}",
-      "--report_host='${NODE_2_IP}'",
-      "--loose-loose-group_replication_local_address='${NODE_2_IP}:${MGR_PORT}'",
-      "--loose-group_replication_group_seeds='${NODE_0_IP}:${MGR_PORT},${NODE_1_IP}:${MGR_PORT},${NODE_2_IP}:${MGR_PORT}'",
-      "--loose-group_replication_ip_whitelist='${NODE_IP_WHITE_LIST}'",
+      "--report_host=${NODE_2_IP}",
+      "--loose-loose-group_replication_local_address=${NODE_2_IP}:${MGR_PORT}",
+      "--loose-group_replication_group_seeds=${NODE_0_IP}:${MGR_PORT},${NODE_1_IP}:${MGR_PORT},${NODE_2_IP}:${MGR_PORT}",
+      "--loose-group_replication_ip_whitelist=${NODE_IP_WHITE_LIST}",
       "--character-set-server=utf8mb4",
       "--collation-server=utf8mb4_unicode_ci",
       ]

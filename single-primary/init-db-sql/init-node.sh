@@ -1,6 +1,13 @@
 #!/bin/bash
 
 set -e
+
+until MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root  ; do
+  >&2 echo "MySQL is unavailable - sleeping"
+  sleep 3
+done
+
+
 # close bin log
 
 MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root \
@@ -15,6 +22,11 @@ mysql_net='172.29.0.%'
 MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root \
 -e "CREATE USER '${MYSQL_REPLICATION_USER}'@'${mysql_net}' IDENTIFIED BY '${MYSQL_REPLICATION_PASSWORD}'; \
 GRANT REPLICATION SLAVE ON *.* TO '${MYSQL_REPLICATION_USER}'@'${mysql_net}';"
+
+
+等待10秒，等待组插件正常
+sleep 15
+
 
 #开启日志
 #设置master

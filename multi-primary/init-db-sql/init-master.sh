@@ -1,6 +1,12 @@
 #!/bin/bash
 
 set -e
+
+until MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root  ; do
+  >&2 echo "MySQL is unavailable - sleeping"
+  sleep 3
+done
+
 # close bin log
 
 MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root \
@@ -10,6 +16,9 @@ MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root \
 
 # mysql_net=$(ip route | awk '$1=="default" {print $3}' | sed "s/\.[0-9]\+$/.%/g")
 mysql_net='172.29.0.%'
+
+等待10秒，等待组插件正常
+sleep 10
 
 MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root \
 -e "CREATE USER '${MYSQL_REPLICATION_USER}'@'${mysql_net}' IDENTIFIED BY '${MYSQL_REPLICATION_PASSWORD}'; \

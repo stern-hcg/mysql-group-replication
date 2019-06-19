@@ -23,24 +23,25 @@ transaction_write_set_extraction = XXHASH64
 # 相当于此GROUP的名字,是UUID值,不能和集群内其他GTID值的UUID混用,可用uuidgen来生成一个新的,
 # 主要是用来区分整个内网里边的各个不同的GROUP,而且也是这个group内的GTID值的UUID
 loose-group_replication_group_name = 'ec5e2627-2285-451f-86e6-0be21581539f'
+# loose-group_replication_group_name = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+
 #是否随服务器启动而自动启动组复制,不建议直接启动,怕故障恢复时有扰乱数据准确性的特殊情况
 loose-group_replication_start_on_boot = OFF
 # 本地MGR的IP地址和端口，host:port,是MGR的端口,不是数据库的端口
-loose-group_replication_local_address = '172.29.0.6:33066'
+#loose-group_replication_local_address = ''
 # 需要接受本MGR实例控制的服务器IP地址和端口,是MGR的端口,不是数据库的端口
-loose-group_replication_group_seeds = '172.29.0.2:33066,172.29.0.5:33066,172.29.0.6:33066'
+#loose-group_replication_group_seeds = ''
 # 开启引导模式,添加组成员，用于第一次搭建MGR或重建MGR的时候使用,只需要在集群内的其中一台开启,
 #loose-group_replication_bootstrap_group = OFF
 
 
-## 先取消此设置
 # 是否启动单主模式，如果启动，则本实例是主库，提供读写，其他实例仅提供读,如果为off就是多主模式了
-# loose-group_replication_single_primary_mode = off
+loose-group_replication_single_primary_mode = off
 # 多主模式下,强制检查每一个实例是否允许该操作,如果不是多主,可以关闭
-#loose-group_replication_enforce_update_everywhere_checks = on
+loose-group_replication_enforce_update_everywhere_checks = on
 
-report_host=172.29.0.6
-loose-group_replication_ip_whitelist='172.29.0.2,172.29.0.5,172.29.0.6'
+#report_host=
+#loose-group_replication_ip_whitelist = ''
 
 
 log-bin=mysql-bin

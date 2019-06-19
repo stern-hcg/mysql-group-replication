@@ -83,6 +83,7 @@ start group_replication;
 
 当前组中的主节点为节点2
 SHOW STATUS LIKE 'group_replication_primary_member';
+show variables like 'group%';
 
 
 
@@ -95,7 +96,7 @@ start group_replication;
 
 
 #清除相关数据卷，完全重建相关容器
-docker volume rm mysql-group-replication_mgr-node-0-data mysql-group-replication_mgr-node-1-data mysql-group-replication_mgr-node-2-data
+docker volume rm single-primary_mgr-node-0-data single-primary_mgr-node-1-data single-primary_mgr-node-2-data
 
 #过程中碰到的相关问题：
 1. SET SQL_LOG_BIN=0, 需要关闭日志执行创建用户的操作，否则可能会造成从节点继续根据日志创建用户，无法创建成功（因为已经有一个了）

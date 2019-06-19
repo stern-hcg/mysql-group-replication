@@ -1,7 +1,7 @@
 ## 
 
 ```
-docker-compose.yaml 配置的是单主多从的组复制集群
+docker-compose.yaml 配置的是多主的组复制集群
 
 docker-compose up 
 
@@ -17,9 +17,10 @@ docker exec -it mgr-node-0 /bin/bash
 mysql -u root -p
 node_root_pwd
 
-主节点上重新执行的SQL如下：
+第一个节点上重新执行的SQL如下：
 set global group_replication_bootstrap_group=ON; \
 start group_replication; \
+
 从节点上重新执行的SQL如下：
 set global group_replication_allow_local_disjoint_gtids_join=ON; \
 start group_replication;
@@ -40,17 +41,6 @@ start group_replication; \
 set global group_replication_bootstrap_group=OFF;
 
 
-从节点：
-SET SQL_LOG_BIN=0; \
-CREATE USER 'replication'@'172.29.0.%' IDENTIFIED BY 'replication_pwd'; \
-GRANT REPLICATION SLAVE ON *.* TO 'replication'@'172.29.0.%';
-SET SQL_LOG_BIN=1; \
-CHANGE MASTER TO MASTER_USER='replication', MASTER_PASSWORD='replication_pwd' FOR CHANNEL 'group_replication_recovery'; \
-INSTALL PLUGIN group_replication SONAME 'group_replication.so'; \
-set global group_replication_ip_whitelist='172.29.0.2,172.29.0.3,172.29.0.4,172.29.0.5,172.29.0.6'; \
-set global group_replication_allow_local_disjoint_gtids_join=ON; \
-start group_replication;
-
 查看相关节点状态：
 
 SELECT * FROM performance_schema.replication_group_members;
@@ -62,24 +52,6 @@ docker network connect mysql-group-replication_mgr_cluster mgr-node-0
 2019-06-18T03:44:23.982720Z 0 [ERROR] Plugin group_replication reported: 'Member was expelled from the group due to network failures, changing member status to ERROR.'
 stop group_replication;
 start group_replication;
-之后，此节点只是单独online，并未重新加入组，因为此节点配置为了主节点？？ 或者当前组模式为单主模式？？
-节点1报告：
-2019-06-18T03:49:35.043705Z 57 [Note] Plugin group_replication reported: 'Only one server alive. Declaring this server as online within the replication group'
-2019-06-18T03:49:35.044271Z 0 [Note] Plugin group_replication reported: 'Group membership changed to 172.29.0.2:3306 on view 15608297750387139:1.'
-2019-06-18T03:49:35.051596Z 0 [Note] Plugin group_replication reported: 'This server was declared online within the replication group'
-2019-06-18T03:49:35.052381Z 0 [Note] Plugin group_replication reported: 'A new primary with address 172.29.0.2:3306 was elected, enabling conflict detection until the new primary applies all relay logs.'
-2019-06-18T03:49:35.052863Z 59 [Note] Plugin group_replication reported: 'This server is working as primary member.'
-
-节点2 报告：
-2019-06-18T03:43:49.938457Z 0 [Note] Plugin group_replication reported: 'Primary server with address 172.29.0.2:3306 left the group. Electing new Primary.'
-2019-06-18T03:43:49.939356Z 0 [Note] Plugin group_replication reported: 'A new primary with address 172.29.0.5:3306 was elected, enabling conflict detection until the new primary applies all relay logs.'
-2019-06-18T03:43:49.941164Z 20 [Note] Plugin group_replication reported: 'This server is working as primary member.'
-2019-06-18T03:43:49.941958Z 0 [Note] Plugin group_replication reported: 'Group membership changed to 172.29.0.5:3306, 172.29.0.6:3306 on view 15608263527248557:4.'
-节点3报告：
-2019-06-18T03:43:49.966358Z 0 [Note] Plugin group_replication reported: 'Primary server with address 172.29.0.2:3306 left the group. Electing new Primary.'
-2019-06-18T03:43:49.967198Z 0 [Note] Plugin group_replication reported: 'A new primary with address 172.29.0.5:3306 was elected, enabling conflict detection until the new primary applies all relay logs.'
-2019-06-18T03:43:49.967878Z 17 [Note] Plugin group_replication reported: 'This server is working as secondary member with primary member address 172.29.0.5:3306.'
-2019-06-18T03:43:49.968355Z 0 [Note] Plugin group_replication reported: 'Group membership changed to 172.29.0.5:3306, 172.29.0.6:3306 on view 15608263527248557:4.'
 
 当前组中的主节点为节点2
 SHOW STATUS LIKE 'group_replication_primary_member';
@@ -95,7 +67,7 @@ start group_replication;
 
 
 #清除相关数据卷，完全重建相关容器
-docker volume rm mysql-group-replication_mgr-node-0-data mysql-group-replication_mgr-node-1-data mysql-group-replication_mgr-node-2-data
+docker volume rm multi-primary_mgr-node-0-data multi-primary_mgr-node-1-data multi-primary_mgr-node-2-data
 
 #过程中碰到的相关问题：
 1. SET SQL_LOG_BIN=0, 需要关闭日志执行创建用户的操作，否则可能会造成从节点继续根据日志创建用户，无法创建成功（因为已经有一个了）

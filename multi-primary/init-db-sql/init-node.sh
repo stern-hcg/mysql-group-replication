@@ -1,7 +1,14 @@
 #!/bin/bash
 
 set -e
+
+until MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root  ; do
+  >&2 echo "MySQL is unavailable - sleeping"
+  sleep 3
+done
+
 # close bin log
+
 
 MYSQL_PWD=${MYSQL_ROOT_PASSWORD} mysql -u root \
 -e "SET SQL_LOG_BIN=0;"
@@ -29,5 +36,4 @@ CHANGE MASTER TO MASTER_USER='${MYSQL_REPLICATION_USER}', MASTER_PASSWORD='${MYS
 FOR CHANNEL 'group_replication_recovery'; \
 INSTALL PLUGIN group_replication SONAME 'group_replication.so'; \
 set global group_replication_ip_whitelist='172.29.0.2,172.29.0.3,172.29.0.4,172.29.0.5,172.29.0.6'; \
-set global group_replication_allow_local_disjoint_gtids_join=ON; \
 start group_replication; "
